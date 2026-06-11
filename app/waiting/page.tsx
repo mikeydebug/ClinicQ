@@ -10,6 +10,7 @@ function WaitingContent() {
   const myToken = searchParams.get('token'); // e.g., ?token=T007
 
   const [currentTokenDisplay, setCurrentTokenDisplay] = useState('--');
+  const [nextPatientToken, setNextPatientToken] = useState<string | null>(null);
   const [avgTime, setAvgTime] = useState(5);
   const [peopleAhead, setPeopleAhead] = useState<number | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
@@ -54,6 +55,20 @@ function WaitingContent() {
       } else {
         setPeopleAhead(null); // Either done, current, or not found
       }
+    }
+
+    // 3. Fetch "Next Up"
+    if (sessionId) {
+      const { data: nextPatient } = await supabase
+        .from('patients')
+        .select('token_display')
+        .eq('session_id', sessionId)
+        .eq('status', 'waiting')
+        .order('token_number', { ascending: true })
+        .limit(1)
+        .maybeSingle();
+        
+      setNextPatientToken(nextPatient ? nextPatient.token_display : null);
     }
 
     setLastUpdated(new Date());
@@ -108,6 +123,14 @@ function WaitingContent() {
         </h2>
         <div className="text-[8rem] md:text-[14rem] font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-300 to-emerald-600 tracking-tighter leading-none mb-4 drop-shadow-[0_0_40px_rgba(16,185,129,0.4)]">
           {currentTokenDisplay}
+        </div>
+        
+        {/* Next Up Indicator */}
+        <div className="mt-8 pt-8 border-t border-slate-700/50 flex flex-col items-center justify-center gap-2">
+          <div className="text-sm font-bold text-slate-500 uppercase tracking-[0.2em]">Next Up</div>
+          <div className="text-3xl font-black text-sky-400 drop-shadow-[0_0_15px_rgba(14,165,233,0.3)]">
+            {nextPatientToken || '--'}
+          </div>
         </div>
       </div>
 
