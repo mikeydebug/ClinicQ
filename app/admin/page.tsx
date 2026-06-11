@@ -31,7 +31,7 @@ export default function AdminPage() {
       .select('*')
       .eq('is_active', true)
       .limit(1)
-      .single();
+      .maybeSingle();
       
     if (session) {
       setCurrentToken(session.current_token);
@@ -39,13 +39,17 @@ export default function AdminPage() {
     }
 
     // Fetch patients
-    const { data: pats } = await supabase
-      .from('patients')
-      .select('*')
-      .eq('session_id', session?.id)
-      .order('token_number', { ascending: false });
-      
-    if (pats) setPatients(pats as Patient[]);
+    if (session) {
+      const { data: pats } = await supabase
+        .from('patients')
+        .select('*')
+        .eq('session_id', session.id)
+        .order('token_number', { ascending: false });
+        
+      if (pats) setPatients(pats as Patient[]);
+    } else {
+      setPatients([]);
+    }
   };
 
   useEffect(() => {
@@ -133,7 +137,7 @@ export default function AdminPage() {
 
   const updateAvgTime = async (newTime: number) => {
     setAvgTime(newTime);
-    const { data: session } = await supabase.from('queue_sessions').select('id').eq('is_active', true).single();
+    const { data: session } = await supabase.from('queue_sessions').select('id').eq('is_active', true).maybeSingle();
     if (session) {
       await supabase.from('queue_sessions').update({ avg_consultation_time: newTime }).eq('id', session.id);
       toast.success('Average time updated');
@@ -185,33 +189,33 @@ export default function AdminPage() {
   const waitingCount = patients.filter(p => p.status === 'waiting').length;
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="min-h-screen bg-slate-950 p-6 text-slate-200 selection:bg-sky-500/30 font-sans">
+      <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Header */}
-        <header className="flex items-center justify-between bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+        <header className="flex items-center justify-between bg-slate-900/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-800/50 transform perspective-1000">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <span className="text-sky-500">Clinic</span>Q Admin
+            <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-center gap-2 drop-shadow-md">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-indigo-500 drop-shadow-[0_0_15px_rgba(14,165,233,0.5)]">Clinic</span>Q Admin
             </h1>
-            <p className="text-slate-500 text-sm mt-1">Receptionist Dashboard</p>
+            <p className="text-slate-400 text-sm mt-1 font-medium">Receptionist Dashboard</p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-lg">
-              <Clock className="w-4 h-4 text-slate-500" />
-              <span className="text-sm font-medium text-slate-700">Avg Time:</span>
+            <div className="flex items-center gap-2 bg-slate-950/50 px-4 py-2.5 rounded-xl border border-slate-800 shadow-inner">
+              <Clock className="w-4 h-4 text-sky-400" />
+              <span className="text-sm font-semibold text-slate-300">Avg Time:</span>
               <input 
                 type="number" 
                 value={avgTime}
                 onChange={(e) => updateAvgTime(Number(e.target.value))}
-                className="w-16 bg-white border border-slate-200 rounded px-2 py-1 text-sm outline-none focus:border-sky-500"
+                className="w-16 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm text-white font-bold outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500 transition-all text-center"
               />
-              <span className="text-sm text-slate-500">min</span>
+              <span className="text-sm text-slate-400">min</span>
             </div>
             <button
               onClick={handleDemoMode}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+              className="flex items-center gap-2 bg-gradient-to-b from-amber-400 to-amber-600 disabled:from-amber-700 disabled:to-amber-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_0_rgb(180,83,9)] hover:translate-y-[2px] hover:shadow-[0_2px_0_rgb(180,83,9)] active:translate-y-[4px] active:shadow-none disabled:shadow-none disabled:translate-y-[4px]"
             >
               {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
               DEMO MODE
@@ -219,78 +223,80 @@ export default function AdminPage() {
             <button
               onClick={handleReset}
               disabled={isLoading}
-              className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+              className="flex items-center justify-center bg-gradient-to-b from-rose-500 to-rose-700 disabled:from-rose-800 disabled:to-rose-900 text-white p-2.5 rounded-xl text-sm font-bold transition-all shadow-[0_4px_0_rgb(159,18,57)] hover:translate-y-[2px] hover:shadow-[0_2px_0_rgb(159,18,57)] active:translate-y-[4px] active:shadow-none disabled:shadow-none disabled:translate-y-[4px]"
               title="Reset Queue"
             >
-              <RotateCcw className="w-4 h-4" />
+              <RotateCcw className="w-5 h-5" />
             </button>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           {/* Left Column: Actions */}
-          <div className="space-y-6 lg:col-span-1">
+          <div className="space-y-8 lg:col-span-1">
             
             {/* Call Next Button Card */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center text-center space-y-4">
-              <h2 className="text-lg font-semibold text-slate-700">Queue Control</h2>
+            <div className="bg-slate-900/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-800/50 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+              <h2 className="text-xl font-bold text-slate-200 tracking-wide">Queue Control</h2>
               <button
                 onClick={handleCallNext}
                 disabled={isCalling || waitingCount === 0}
-                className="w-full py-6 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-400 text-white rounded-xl font-bold text-2xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-emerald-500/20 disabled:shadow-none"
+                className="w-full py-8 bg-gradient-to-b from-emerald-400 to-emerald-600 hover:from-emerald-300 hover:to-emerald-500 disabled:from-slate-700 disabled:to-slate-800 disabled:text-slate-500 text-white rounded-2xl font-extrabold text-3xl flex items-center justify-center gap-3 transition-all active:scale-95 shadow-[0_8px_0_rgb(4,120,87)] hover:translate-y-[2px] hover:shadow-[0_6px_0_rgb(4,120,87)] active:translate-y-[8px] active:shadow-none disabled:shadow-none disabled:translate-y-[8px] relative z-10"
               >
-                {isCalling ? <RefreshCw className="w-8 h-8 animate-spin" /> : <Play className="w-8 h-8 fill-current" />}
+                {isCalling ? <RefreshCw className="w-10 h-10 animate-spin" /> : <Play className="w-10 h-10 fill-current" />}
                 CALL NEXT
               </button>
-              <div className="flex items-center gap-6 pt-2">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-slate-900">{waitingCount}</div>
-                  <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Waiting</div>
+              <div className="flex items-center gap-8 pt-4 w-full justify-center">
+                <div className="text-center bg-slate-950/50 px-6 py-4 rounded-2xl border border-slate-800 w-32 shadow-inner">
+                  <div className="text-4xl font-black text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.3)]">{waitingCount}</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Waiting</div>
                 </div>
-                <div className="w-px h-8 bg-slate-200"></div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-sky-500">
+                <div className="text-center bg-slate-950/50 px-6 py-4 rounded-2xl border border-slate-800 w-32 shadow-inner">
+                  <div className="text-4xl font-black text-sky-400 drop-shadow-[0_0_15px_rgba(14,165,233,0.4)]">
                     {currentToken > 0 ? `T${currentToken.toString().padStart(3, '0')}` : '--'}
                   </div>
-                  <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Current</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">Current</div>
                 </div>
               </div>
             </div>
 
             {/* Add Patient Form */}
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2 mb-4">
-                <UserPlus className="w-5 h-5 text-sky-500" />
+            <div className="bg-slate-900/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-800/50">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3 mb-6">
+                <div className="p-2 bg-sky-500/20 rounded-xl">
+                  <UserPlus className="w-6 h-6 text-sky-400" />
+                </div>
                 Add Patient
               </h2>
-              <form onSubmit={handleAddPatient} className="space-y-4">
+              <form onSubmit={handleAddPatient} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Patient Name *</label>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Patient Name *</label>
                   <input
                     id="nameInput"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                    placeholder="Enter name"
+                    className="w-full px-5 py-3 bg-slate-950/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all text-white font-medium shadow-inner placeholder:text-slate-600"
+                    placeholder="e.g. Rahul Sharma"
                     autoFocus
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number (Optional)</label>
+                  <label className="block text-sm font-semibold text-slate-400 mb-2">Phone Number (Optional)</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all"
-                    placeholder="Enter phone"
+                    className="w-full px-5 py-3 bg-slate-950/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 outline-none transition-all text-white font-medium shadow-inner placeholder:text-slate-600"
+                    placeholder="e.g. 9876543210"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-2.5 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-4 mt-2 bg-gradient-to-b from-sky-400 to-sky-600 hover:from-sky-300 hover:to-sky-500 disabled:from-slate-700 disabled:to-slate-800 text-white rounded-xl font-bold text-lg transition-all shadow-[0_6px_0_rgb(2,132,199)] hover:translate-y-[2px] hover:shadow-[0_4px_0_rgb(2,132,199)] active:translate-y-[6px] active:shadow-none disabled:shadow-none disabled:translate-y-[6px] flex items-center justify-center gap-2"
                 >
                   {isLoading ? <RefreshCw className="w-5 h-5 animate-spin" /> : 'Assign Token'}
                 </button>
@@ -300,50 +306,57 @@ export default function AdminPage() {
           </div>
 
           {/* Right Column: Queue Table */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2 flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Users className="w-5 h-5 text-sky-500" />
+          <div className="bg-slate-900/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-800/50 lg:col-span-2 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-xl font-bold text-white flex items-center gap-3">
+                <div className="p-2 bg-indigo-500/20 rounded-xl">
+                  <Users className="w-6 h-6 text-indigo-400" />
+                </div>
                 Today's Queue
               </h2>
             </div>
             
-            <div className="flex-1 overflow-auto max-h-[600px] border border-slate-100 rounded-xl">
+            <div className="flex-1 overflow-auto max-h-[600px] border border-slate-700/50 rounded-2xl bg-slate-950/50 shadow-inner">
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-50 sticky top-0 z-10">
+                <thead className="bg-slate-900/90 backdrop-blur-md sticky top-0 z-10 shadow-md">
                   <tr>
-                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Token</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Patient Name</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Phone</th>
-                    <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-200">Status</th>
+                    <th className="px-6 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-700">Token</th>
+                    <th className="px-6 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-700">Patient Name</th>
+                    <th className="px-6 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-700">Phone</th>
+                    <th className="px-6 py-4 text-xs font-extrabold text-slate-400 uppercase tracking-widest border-b border-slate-700">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-800/50">
                   {patients.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
-                        No patients in the queue today.
+                      <td colSpan={4} className="px-6 py-16 text-center text-slate-500 font-medium text-lg">
+                        <div className="flex flex-col items-center justify-center gap-4">
+                          <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
+                            <Users className="w-8 h-8 text-slate-600" />
+                          </div>
+                          No patients in the queue today.
+                        </div>
                       </td>
                     </tr>
                   ) : (
                     patients.map((p) => (
-                      <tr key={p.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="font-mono font-medium text-slate-900">{p.token_display}</span>
+                      <tr key={p.id} className="hover:bg-slate-800/50 transition-colors group cursor-default">
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className="font-mono font-bold text-sky-400 bg-sky-400/10 px-3 py-1.5 rounded-lg border border-sky-400/20">{p.token_display}</span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700">
+                        <td className="px-6 py-5 whitespace-nowrap font-bold text-slate-200 text-lg group-hover:text-white transition-colors">
                           {p.patient_name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-slate-500 text-sm">
-                          {p.phone || '-'}
+                        <td className="px-6 py-5 whitespace-nowrap text-slate-400 text-sm font-mono">
+                          {p.phone || '—'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                            p.status === 'waiting' ? 'bg-amber-50 text-amber-700 border-amber-200' :
-                            p.status === 'current' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
-                            'bg-slate-100 text-slate-600 border-slate-200'
+                        <td className="px-6 py-5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider border ${
+                            p.status === 'waiting' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20 shadow-[0_0_10px_rgba(245,158,11,0.2)]' :
+                            p.status === 'current' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.2)] animate-pulse' :
+                            'bg-slate-800 text-slate-400 border-slate-700'
                           }`}>
-                            {p.status.charAt(0).toUpperCase() + p.status.slice(1)}
+                            {p.status}
                           </span>
                         </td>
                       </tr>

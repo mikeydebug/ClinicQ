@@ -16,7 +16,7 @@ export async function POST(request: Request) {
       .select('id')
       .eq('is_active', true)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (sessionError || !sessionData) {
       return NextResponse.json({ error: 'No active session found. Please reset or create a session.' }, { status: 500 });

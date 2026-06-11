@@ -8,7 +8,7 @@ export async function POST(request: Request) {
       .select('id, current_token')
       .eq('is_active', true)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (sessionError || !sessionData) {
       return NextResponse.json({ error: 'No active session found.' }, { status: 500 });

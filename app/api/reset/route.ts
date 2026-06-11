@@ -17,7 +17,7 @@ export async function POST() {
         }
       ])
       .select()
-      .single();
+      .maybeSingle();
 
     if (createError) throw createError;
 
