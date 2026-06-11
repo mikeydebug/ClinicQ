@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 
-export async function POST(request: Request) {
+export async function POST() {
   try {
     const { data: sessionData, error: sessionError } = await supabase
       .from('queue_sessions')
@@ -70,8 +70,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'System busy. Please try again.' }, { status: 409 });
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error calling next patient:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

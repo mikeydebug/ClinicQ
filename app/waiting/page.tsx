@@ -98,6 +98,7 @@ function WaitingContent() {
     return () => {
       supabase.removeChannel(channel);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [myToken]);
 
   const estimatedWait = peopleAhead !== null ? peopleAhead * avgTime : null;

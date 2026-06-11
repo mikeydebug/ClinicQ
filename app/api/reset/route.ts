@@ -25,8 +25,9 @@ export async function POST() {
     // Actually, just creating a new session is enough because the frontend will fetch the new active session and see no patients for it.
 
     return NextResponse.json({ success: true, session: newSession });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error resetting queue:', error);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Internal server error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

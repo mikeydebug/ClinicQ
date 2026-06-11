@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import toast from 'react-hot-toast';
-import { Play, Users, Clock, Settings, UserPlus, RefreshCw, Zap, RotateCcw } from 'lucide-react';
+import { Play, Users, Clock, UserPlus, RefreshCw, Zap, RotateCcw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 type Patient = {
@@ -109,7 +109,8 @@ export default function AdminPage() {
       } else if (data.error) {
         toast.error(data.error);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to add patient');
     } finally {
       setIsLoading(false);
@@ -128,7 +129,8 @@ export default function AdminPage() {
       } else if (data.error) {
         toast.error(data.error);
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to call next patient');
     } finally {
       setIsCalling(false);
@@ -159,7 +161,8 @@ export default function AdminPage() {
       }
       toast.success(`Demo mode: Added ${added} patients!`);
       fetchData();
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Demo mode failed');
     } finally {
       setIsLoading(false);
@@ -179,7 +182,8 @@ export default function AdminPage() {
       } else {
         toast.error("Failed to reset queue");
       }
-    } catch (err) {
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to reset queue');
     } finally {
       setIsLoading(false);
@@ -312,7 +316,7 @@ export default function AdminPage() {
                 <div className="p-2 bg-indigo-500/20 rounded-xl">
                   <Users className="w-6 h-6 text-indigo-400" />
                 </div>
-                Today's Queue
+                Today&apos;s Queue
               </h2>
             </div>
             
