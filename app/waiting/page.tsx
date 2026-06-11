@@ -61,7 +61,28 @@ function WaitingContent() {
 
   useEffect(() => {
     fetchData();
-    // We will add realtime subscriptions in the next commit
+    
+    const channel = supabase
+      .channel('clinic-queue-waiting')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'patients' },
+        () => {
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'queue_sessions' },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [myToken]);
 
   const estimatedWait = peopleAhead !== null ? peopleAhead * avgTime : null;

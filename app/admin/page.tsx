@@ -50,6 +50,28 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchData();
+
+    const channel = supabase
+      .channel('clinic-queue')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'patients' },
+        () => {
+          fetchData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'queue_sessions' },
+        () => {
+          fetchData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleAddPatient = async (e: FormEvent) => {
