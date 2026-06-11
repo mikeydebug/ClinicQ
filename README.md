@@ -17,6 +17,8 @@ Live Demo: [Your Live Link Here]
 
 > A stunning, real-time digital queue management system designed for neighborhood clinics. Features a synchronized Admin Dashboard and a Live Waiting Room display with a premium 3D Glassmorphism aesthetic.
 
+**🌟 Live Demo:** [https://clinic-q-zeta.vercel.app](https://clinic-q-zeta.vercel.app)
+
 ---
 
 ## 🚀 Features
