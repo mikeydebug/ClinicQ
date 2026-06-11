@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <style>
+      .box { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; rx: 8; }
+      .title { font-family: monospace; font-size: 16px; font-weight: bold; fill: #1e293b; text-anchor: middle; }
+      .text { font-family: monospace; font-size: 14px; fill: #475569; }
+      .arrow { stroke: #3b82f6; stroke-width: 2; fill: none; }
+      .arrow-head { fill: #3b82f6; }
+      .event { fill: #0ea5e9; font-weight: bold; }
+    </style>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" class="arrow-head" />
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#ffffff" />
+
+  <!-- Columns -->
+  <rect x="50" y="50" width="200" height="40" class="box" />
+  <text x="150" y="75" class="title">RECEPTIONIST (/admin)</text>
+
+  <rect x="300" y="50" width="200" height="40" class="box" />
+  <text x="400" y="75" class="title">SUPABASE REALTIME</text>
+
+  <rect x="550" y="50" width="200" height="40" class="box" />
+  <text x="650" y="75" class="title">PATIENT (/waiting)</text>
+
+  <!-- Lines down -->
+  <line x1="150" y1="90" x2="150" y2="550" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,5" />
+  <line x1="400" y1="90" x2="400" y2="550" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,5" />
+  <line x1="650" y1="90" x2="650" y2="550" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="5,5" />
+
+  <!-- Interactions -->
+  <!-- 1. Click Call Next -->
+  <text x="160" y="140" class="text">-- clicks "Call Next" --&gt;</text>
+  <line x1="150" y1="150" x2="150" y2="150" /> <!-- Placeholder -->
+  
+  <!-- 2. POST API -->
+  <line x1="150" y1="190" x2="390" y2="190" class="arrow" marker-end="url(#arrowhead)" />
+  <text x="160" y="180" class="text">-- POST /api/call-next --&gt;</text>
+  <text x="160" y="205" class="text">(updates DB)</text>
+
+  <!-- 3. DB Triggers -->
+  <text x="410" y="250" class="text">DB change triggers</text>
+  <text x="410" y="270" class="text event">postgres_changes</text>
+  <text x="410" y="290" class="text">event broadcast --&gt;</text>
+
+  <!-- 4. Broadcast to Waiting -->
+  <line x1="400" y1="340" x2="640" y2="340" class="arrow" marker-end="url(#arrowhead)" />
+  <text x="410" y="330" class="text">-- patients table     --&gt;</text>
+  <text x="410" y="355" class="text">   UPDATE event fired</text>
+
+  <line x1="400" y1="410" x2="640" y2="410" class="arrow" marker-end="url(#arrowhead)" />
+  <text x="410" y="400" class="text">-- queue_sessions     --&gt;</text>
+  <text x="410" y="425" class="text">   UPDATE event fired</text>
+
+  <!-- 5. Client Updates -->
+  <text x="660" y="460" class="text">/waiting receives</text>
+  <text x="660" y="480" class="text">new current_token</text>
+  <text x="660" y="500" class="text">recalculates wait</text>
+  <text x="660" y="520" class="text event">UI updates LIVE</text>
+</svg>

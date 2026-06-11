@@ -1,0 +1,21 @@
+RECEPTIONIST (/admin)          SUPABASE REALTIME          PATIENT (/waiting)
+      |                               |                           |
+      | -- clicks "Call Next" -->     |                           |
+      |                               |                           |
+      | -- POST /api/call-next -->    |                           |
+      |    (updates DB)               |                           |
+      |                               |                           |
+      |          DB change triggers   |                           |
+      |          postgres_changes     |                           |
+      |          event broadcast -->  |                           |
+      |                               |                           |
+      |                               | -- patients table     --> |
+      |                               |    UPDATE event fired     |
+      |                               |                           |
+      |                               | -- queue_sessions     --> |
+      |                               |    UPDATE event fired     |
+      |                               |                           |
+      |                               |    /waiting receives  --> |
+      |                               |    new current_token      |
+      |                               |    recalculates wait  --> |
+      |                               |    UI updates LIVE        |
