@@ -1,18 +1,6 @@
-# ClinicQ - Live Digital Queue Manager
 
-ClinicQ is a real-time queue management system tailored for Indian neighbourhood clinics. It replaces physical token paper systems with a live, web-based token display screen.
 
-Live Demo: [Your Live Link Here]
 
-## Tech Stack
-- Frontend: Next.js 14 (App Router) + TypeScript + Tailwind CSS
-- Real-time: Supabase Realtime (WebSockets)
-- Database: Supabase (PostgreSQL)
-
-## Screenshots
-[Add screenshots of /admin and /waiting here]
-
-## Local Setup Instructions
 # 🏥 ClinicQ - Intelligent Queue Management
 
 > A stunning, real-time digital queue management system designed for neighborhood clinics. Features a synchronized Admin Dashboard and a Live Waiting Room display with a premium 3D Glassmorphism aesthetic.
