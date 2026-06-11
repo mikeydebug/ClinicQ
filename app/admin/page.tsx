@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import toast from 'react-hot-toast';
-import { Play, Users, Clock, Settings, UserPlus, RefreshCw, Zap } from 'lucide-react';
+import { Play, Users, Clock, Settings, UserPlus, RefreshCw, Zap, RotateCcw } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 type Patient = {
@@ -162,6 +162,26 @@ export default function AdminPage() {
     }
   };
 
+  const handleReset = async () => {
+    if (!window.confirm("Are you sure you want to reset the entire queue? This will start a new session.")) return;
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/reset', { method: 'POST' });
+      if (res.ok) {
+        toast.success("Queue reset successfully!");
+        setPatients([]);
+        setCurrentToken(0);
+        fetchData();
+      } else {
+        toast.error("Failed to reset queue");
+      }
+    } catch (err) {
+      toast.error('Failed to reset queue');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const waitingCount = patients.filter(p => p.status === 'waiting').length;
 
   return (
@@ -195,6 +215,14 @@ export default function AdminPage() {
             >
               {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
               DEMO MODE
+            </button>
+            <button
+              onClick={handleReset}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600 disabled:bg-rose-300 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+              title="Reset Queue"
+            >
+              <RotateCcw className="w-4 h-4" />
             </button>
           </div>
         </header>
