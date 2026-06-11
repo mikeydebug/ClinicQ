@@ -2,7 +2,7 @@
 
 import { useState, useEffect, FormEvent } from 'react';
 import toast from 'react-hot-toast';
-import { Play, Users, Clock, Settings, UserPlus, RefreshCw } from 'lucide-react';
+import { Play, Users, Clock, Settings, UserPlus, RefreshCw, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 type Patient = {
@@ -140,6 +140,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleDemoMode = async () => {
+    setIsLoading(true);
+    const demoPatients = ['Priya', 'Rajan', 'Sunita', 'Ahmed', 'Kavitha'];
+    let added = 0;
+    try {
+      for (const pName of demoPatients) {
+        const res = await fetch('/api/add-patient', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ patientName: pName, ignoreWarning: true })
+        });
+        if (res.ok) added++;
+      }
+      toast.success(`Demo mode: Added ${added} patients!`);
+      fetchData();
+    } catch (err) {
+      toast.error('Demo mode failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const waitingCount = patients.filter(p => p.status === 'waiting').length;
 
   return (
@@ -166,7 +188,14 @@ export default function AdminPage() {
               />
               <span className="text-sm text-slate-500">min</span>
             </div>
-            {/* Demo mode button placeholder for later */}
+            <button
+              onClick={handleDemoMode}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-300 text-white px-4 py-2 rounded-lg text-sm font-bold transition-colors shadow-sm"
+            >
+              {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+              DEMO MODE
+            </button>
           </div>
         </header>
 
